@@ -4,9 +4,10 @@
 CC     = gcc
 CPPC   = g++
 ASMC 	= nasm
+RCC		= windres
 CFLAGS = -std=c99
 CPPFLAGS = -std=c++11
-CXXFLAGS = -MD
+CXXFLAGS = -MD -I./include -L./lib
 ASMFLAGS = -f elf64
 CXXLIBS =
 
@@ -14,27 +15,29 @@ CXXLIBS =
 # Project files
 #
 SRCDIR = ./src
-SRCSCPP = $(wildcard $(SRCDIR)/*.cpp)
-SRCSC = $(wildcard $(SRCDIR)/*.c)
-SRCSASM = $(wildcard $(SRCDIR)/*.asm)
-OBJS = $(patsubst %.cpp,%.o,$(SRCSCPP)) $(patsubst %.c,%.o,$(SRCSC)) $(patsubst %.asm,%.o,$(SRCSASM))
+SRCSCPP = $(shell find $(SRCDIR) -name *.cpp) # might need bash for this
+SRCSC = $(shell find $(SRCDIR) -name *.c)
+SRCSASM = $(shell find $(SRCDIR) -name *.asm)
+SRCSRC = $(shell find $(SRCDIR) -name *.rc)
+OBJS = $(patsubst %.cpp,%.o,$(SRCSCPP)) $(patsubst %.c,%.o,$(SRCSC)) $(patsubst %.asm,%.o,$(SRCSASM)) $(patsubst %.rc,%_rc.o,$(SRCSRC))
 EXE  = main
 
+BINDIR = ./bin
 #
 # Debug build settings
 #
-DBGDIR = ./bin/debug
+DBGDIR = $(BINDIR)/debug
 DBGEXE = $(DBGDIR)/$(EXE)
 DBGOBJS = $(addprefix $(DBGDIR)/, $(OBJS))
-DBGCXXFLAGS = -g -O0
+DBGCXXFLAGS = -g -O0 -DDEBUG
 
 #
 # Release build settings
 #
-RELDIR = ./bin/release
+RELDIR = $(BINDIR)/release
 RELEXE = $(RELDIR)/$(EXE)
 RELOBJS = $(addprefix $(RELDIR)/, $(OBJS))
-RELCXXFLAGS = -O3
+RELCXXFLAGS = -O3 -DRELEASE
 
 .PHONY: all clean debug prep release remake
 
@@ -55,6 +58,8 @@ $(DBGDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) $(CXXFLAGS) $(DBGCXXFLAGS) -o $@ $*.c
 $(DBGDIR)/%.o: %.asm
 	$(ASMC) $(ASMFLAGS) $*.asm -o $@
+$(DBGDIR)/%_rc.o: %.rc
+	$(RCC) $*.rc $@
 
 #
 # Release rules
@@ -70,18 +75,22 @@ $(RELDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) $(CXXFLAGS) $(RELCXXFLAGS) -o $@ $*.c
 $(RELDIR)/%.o: %.asm
 	$(ASMC) $(ASMFLAGS) $*.asm -o $@ 
+$(RELDIR)/%_rc.o: %.rc
+	$(RCC) $*.rc $@
 
 #
 # Other rules
 #
-prepwin:
-	mkdir $(DBGDIR)\src $(RELDIR)\src
-	xcopy src $(DBGDIR)\src /t /e
-	xcopy src $(RELDIR)\src /t /e
+
+# not good.
+# prepwin:
+# 	mkdir $(DBGDIR)\src $(RELDIR)\src
+# 	xcopy src $(DBGDIR)\src /t /e
+# 	xcopy src $(RELDIR)\src /t /e
 	
 prep:
-	@mkdir -p $(DBGDIR)/src $(RELDIR)/src
-	@cd src && find . -type d -exec mkdir -p -- ../$(DBGDIR)/src/{} ../$(RELDIR)/src/{} \;
+	@mkdir -p $(DBGDIR)/$(SRCDIR) $(RELDIR)/$(SRCDIR)
+	@cd src && find . -type d -exec mkdir -p -- ../$(DBGDIR)/$(SRCDIR)/{} ../$(RELDIR)/$(SRCDIR)/{} \;
 
 remake: clean all
 
@@ -89,7 +98,7 @@ clean:
 	rm -f $(RELEXE) $(RELOBJS) $(DBGEXE) $(DBGOBJS) $(patsubst %.o,%.d,$(DBGOBJS)) $(patsubst %.o,%.d,$(RELOBJS))
 
 hardclean:
-	rm -r ./bin
+	rm -r $(BINDIR)
 
 -include $(DBGOBJS:.o=.d)
 -include $(RELOBJS:.o=.d)
