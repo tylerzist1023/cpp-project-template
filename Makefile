@@ -7,7 +7,7 @@ ASMC 	= nasm
 RCC		= windres
 CFLAGS = -std=c99
 CPPFLAGS = -std=c++11
-CXXFLAGS = -MD -I./include -L./lib
+CXXFLAGS = -DUNICODE -MD -I./include -L./lib
 ASMFLAGS = -f elf64
 CXXLIBS =
 
