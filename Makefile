@@ -1,14 +1,15 @@
 #
 # Compiler flags
 #
-CC     = gcc
-CPPC   = g++
+CC     = clang
+CPPC   = clang++
 ASMC 	= nasm
-RCC		= windres
+RCC		= llvm-rc
 CFLAGS = -std=c99
-CPPFLAGS = -std=c++11
+CPPFLAGS = -std=c++14
 CXXFLAGS = -DUNICODE -MD -I./include -L./lib
 ASMFLAGS = -f elf64
+RCCFLAGS = /FO # only on llvm-rc, remove when using windres
 CXXLIBS =
 
 #
@@ -59,7 +60,7 @@ $(DBGDIR)/%.o: %.c
 $(DBGDIR)/%.o: %.asm
 	$(ASMC) $(ASMFLAGS) $*.asm -o $@
 $(DBGDIR)/%_rc.o: %.rc
-	$(RCC) $*.rc $@
+	$(RCC) $*.rc $(RCCFLAGS) $@
 
 #
 # Release rules
@@ -76,17 +77,12 @@ $(RELDIR)/%.o: %.c
 $(RELDIR)/%.o: %.asm
 	$(ASMC) $(ASMFLAGS) $*.asm -o $@ 
 $(RELDIR)/%_rc.o: %.rc
-	$(RCC) $*.rc $@
+	$(RCC) $*.rc $(RCCFLAGS) $@
 
 #
 # Other rules
 #
-
-# not good.
-# prepwin:
-# 	mkdir $(DBGDIR)\src $(RELDIR)\src
-# 	xcopy src $(DBGDIR)\src /t /e
-# 	xcopy src $(RELDIR)\src /t /e
+Makefile
 	
 prep:
 	@mkdir -p $(DBGDIR)/$(SRCDIR) $(RELDIR)/$(SRCDIR)
@@ -99,6 +95,9 @@ clean:
 
 hardclean:
 	rm -r $(BINDIR)
+
+Makefile:
+	remake
 
 -include $(DBGOBJS:.o=.d)
 -include $(RELOBJS:.o=.d)
