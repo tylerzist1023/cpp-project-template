@@ -22,7 +22,7 @@ if "%Platform%" neq "x64" (
 set SourceFiles=../../src/main.cpp
 
 set MSVCCompileFlags=/DPLATFORM_WIN32 /nologo /W3 /Z7 /GS- /Gs999999
-set MSVCLinkFlags=/incremental:no /opt:icf /opt:ref /subsystem:windows
+set MSVCLinkFlags=/incremental:no /opt:icf /opt:ref /subsystem:console
 
 set MSVCProfileCompileFlags=
 set MSVCProfileLinkFlags=
