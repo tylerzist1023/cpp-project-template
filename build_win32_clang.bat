@@ -17,10 +17,11 @@ set ClangProfileLinkFlags=
 
 if "%1"=="" (
 	set Profile=debug
-	goto compile
+	goto setflags
 )
 set Profile=%1
 
+:setflags
 if %Profile% == debug (
 	set ClangProfileCompileFlags=-g -O0 -DDEBUG
 	set ClangProfileLinkFlags=
@@ -37,7 +38,6 @@ if not exist ./bin/%Profile% (
 	exit /b 1
 )
 
-:compile
 pushd bin
 pushd %Profile%
 call clang++ %ClangCompileFlags% %ClangProfileCompileFlags% %ClangLinkFlags% %ClangProfileLinkFlags% %SourceFiles% -o main_clang.exe

@@ -29,10 +29,11 @@ set MSVCProfileLinkFlags=
 
 if "%1"=="" (
 	set Profile=debug
-	goto compile
+	goto setflags
 )
 set Profile=%1
 
+:setflags
 if %Profile% == debug (
 	set MSVCProfileCompileFlags=/Od /DDEBUG
 	set MSVCProfileLinkFlags=
@@ -49,7 +50,6 @@ if not exist ./bin/%Profile% (
 	exit /b 1
 )
 
-:compile
 pushd bin
 pushd %Profile%
 call cl %MSVCCompileFlags% %MSVCProfileCompileFlags% -Femain_msvc.exe %SourceFiles% /link %MSVCLinkFlags% %MSVCProfileLinkFlags%
