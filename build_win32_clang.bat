@@ -9,8 +9,8 @@ popd
 
 set SourceFiles=../../src/main.cpp
 
-set ClangCompileFlags=-DPLATFORM_WIN32
-set ClangLinkFlags=-fuse-ld=lld -Wl,-subsystem:console -nostdlib++
+set ClangCompileFlags=-I../../include -DPLATFORM_WIN32
+set ClangLinkFlags=-L../../lib -fuse-ld=lld -Wl,-subsystem:console -nostdlib++
 
 set ClangProfileCompileFlags=
 set ClangProfileLinkFlags=
