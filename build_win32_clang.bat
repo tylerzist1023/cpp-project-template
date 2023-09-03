@@ -1,47 +1,18 @@
 @echo off
 setlocal
 
-mkdir bin
-pushd bin
-mkdir debug
-mkdir release
-popd
+set CompileFlags=-I../../include -DPLATFORM_WIN32 -DCOMPILER_CLANG
+set LinkFlags=-L../../lib -fuse-ld=lld -Wl,-subsystem:console -nostdlib++
 
-set SourceFiles=../../src/main.cpp
+set DebugCompileFlags=-g -O0 -DDEBUG
+set DebugLinkFlags=
 
-set ClangCompileFlags=-I../../include -DPLATFORM_WIN32
-set ClangLinkFlags=-L../../lib -fuse-ld=lld -Wl,-subsystem:console -nostdlib++
+set ReleaseCompileFlags=-O3
+set ReleaseLinkFlags=
 
-set ClangProfileCompileFlags=
-set ClangProfileLinkFlags=
+set Compiler=clang++
+set CompilerName=clang
 
-if "%1"=="" (
-	set Profile=debug
-	goto setflags
-)
-set Profile=%1
+set ExeCommand=-o
 
-:setflags
-if %Profile% == debug (
-	set ClangProfileCompileFlags=-g -O0 -DDEBUG
-	set ClangProfileLinkFlags=
-) else if %Profile% == release (
-	set ClangProfileCompileFlags=-O3
-	set ClangProfileLinkFlags=
-) else (
-	echo ERROR: You should either specify debug or release as the first argument.
-	exit /b 1
-)
-
-if not exist ./bin/%Profile% (
-	echo ERROR: Bin directory does not exist. You should either specify debug or release as the first argument.
-	exit /b 1
-)
-
-pushd bin
-pushd %Profile%
-call clang++ %ClangCompileFlags% %ClangProfileCompileFlags% %ClangLinkFlags% %ClangProfileLinkFlags% %SourceFiles% -o main_clang.exe
-popd
-popd
-
-pause
+call build_win32.bat %1
